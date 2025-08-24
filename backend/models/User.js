@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: '👤',
+    default: 'avt1',
     required: true
   },
   roomId: {

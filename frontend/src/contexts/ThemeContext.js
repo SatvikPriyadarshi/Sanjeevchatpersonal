@@ -11,24 +11,25 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
+  const [isDark, setIsDark] = useState(() => {
     const savedTheme = localStorage.getItem('chat-theme');
-    return savedTheme || 'light';
+    return savedTheme === 'dark';
   });
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setIsDark(prev => !prev);
   };
 
   useEffect(() => {
+    const theme = isDark ? 'dark' : 'light';
     localStorage.setItem('chat-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  }, [isDark]);
 
   const value = {
-    theme,
+    theme: { isDark },
     toggleTheme,
-    isDark: theme === 'dark'
+    isDark
   };
 
   return (

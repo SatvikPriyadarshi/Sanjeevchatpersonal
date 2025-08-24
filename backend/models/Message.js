@@ -9,7 +9,9 @@ const messageSchema = new mongoose.Schema({
   senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: function() {
+      return this.messageType !== 'system';
+    }
   },
   content: {
     type: String,
@@ -29,6 +31,22 @@ const messageSchema = new mongoose.Schema({
   isRead: {
     type: Boolean,
     default: false
+  },
+  isEdited: {
+    type: Boolean,
+    default: false
+  },
+  editedAt: {
+    type: Date
+  },
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  },
+  reactions: {
+    type: Map,
+    of: Number,
+    default: new Map()
   }
 }, {
   timestamps: true

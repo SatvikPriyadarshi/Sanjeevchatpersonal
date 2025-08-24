@@ -46,13 +46,24 @@ roomSchema.methods.isAvailable = function() {
 
 // Method to add user to room
 roomSchema.methods.addUser = function(userId) {
+  // Check if user is already in the room
+  if ((this.user1 && this.user1.toString() === userId.toString()) ||
+      (this.user2 && this.user2.toString() === userId.toString())) {
+    console.log('User already in room, not adding again');
+    return this.save();
+  }
+  
   if (!this.user1) {
     this.user1 = userId;
     this.status = 'occupied';
   } else if (!this.user2) {
     this.user2 = userId;
     this.status = 'full';
+  } else {
+    // Room is actually full
+    throw new Error('Room is full');
   }
+  
   this.lastActivity = new Date();
   return this.save();
 };
@@ -84,6 +95,21 @@ roomSchema.statics.findAvailableRoom = function() {
       { status: 'occupied' }
     ]
   }).sort({ roomNumber: 1 });
+};
+
+// Method to fix inconsistent room state
+roomSchema.methods.fixInconsistentState = function() {
+  const userCount = (this.user1 ? 1 : 0) + (this.user2 ? 1 : 0);
+  
+  if (userCount === 0) {
+    this.status = 'available';
+  } else if (userCount === 1) {
+    this.status = 'occupied';
+  } else if (userCount === 2) {
+    this.status = 'full';
+  }
+  
+  return this.save();
 };
 
 // Static method to initialize rooms

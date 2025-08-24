@@ -17,6 +17,8 @@ const ACTIONS = {
   SET_CURRENT_ROOM: 'SET_CURRENT_ROOM',
   ADD_MESSAGE: 'ADD_MESSAGE',
   SET_MESSAGES: 'SET_MESSAGES',
+  UPDATE_MESSAGE: 'UPDATE_MESSAGE',
+  DELETE_MESSAGE: 'DELETE_MESSAGE',
   SET_TYPING_USERS: 'SET_TYPING_USERS',
   ADD_TYPING_USER: 'ADD_TYPING_USER',
   REMOVE_TYPING_USER: 'REMOVE_TYPING_USER',
@@ -61,6 +63,20 @@ const chatReducer = (state, action) => {
       return {
         ...state,
         messages: action.payload
+      };
+    
+    case ACTIONS.UPDATE_MESSAGE:
+      return {
+        ...state,
+        messages: state.messages.map(msg => 
+          msg._id === action.payload._id ? { ...msg, ...action.payload } : msg
+        )
+      };
+    
+    case ACTIONS.DELETE_MESSAGE:
+      return {
+        ...state,
+        messages: state.messages.filter(msg => msg._id !== action.payload)
       };
     
     case ACTIONS.SET_TYPING_USERS:
@@ -121,17 +137,41 @@ export const ChatProvider = ({ children }) => {
     });
 
     socket.on('room-joined', (roomData) => {
+      console.log('🏠 Frontend: Room joined event received:', roomData);
       dispatch({ type: ACTIONS.SET_CURRENT_ROOM, payload: roomData });
       dispatch({ type: ACTIONS.SET_MESSAGES, payload: roomData.messages });
     });
 
     // Message events
     socket.on('new-message', (message) => {
+      console.log('📨 Frontend: Received new message:', message);
       dispatch({ type: ACTIONS.ADD_MESSAGE, payload: message });
+    });
+
+    socket.on('message-edited', (editedMessage) => {
+      console.log('✏️ Frontend: Message edited:', editedMessage);
+      dispatch({ 
+        type: ACTIONS.UPDATE_MESSAGE, 
+        payload: editedMessage
+      });
+    });
+
+    socket.on('message-deleted', ({ messageId }) => {
+      console.log('🗑️ Frontend: Message deleted:', messageId);
+      dispatch({ 
+        type: ACTIONS.DELETE_MESSAGE, 
+        payload: messageId
+      });
+    });
+
+    socket.on('messages-cleared', ({ messages }) => {
+      console.log('🧹 Frontend: All messages cleared');
+      dispatch({ type: ACTIONS.SET_MESSAGES, payload: messages });
     });
 
     // User events
     socket.on('user-joined-room', (user) => {
+      console.log('👤 Frontend: User joined room:', user);
       dispatch({ type: ACTIONS.SET_ROOM_USERS, payload: [...state.roomUsers, user] });
     });
 
@@ -149,6 +189,7 @@ export const ChatProvider = ({ children }) => {
 
     // Typing events
     socket.on('user-typing', (userData) => {
+      console.log('⌨️ Frontend: Received typing event:', userData);
       if (userData.isTyping) {
         dispatch({ type: ACTIONS.ADD_TYPING_USER, payload: userData });
       } else {
@@ -156,16 +197,33 @@ export const ChatProvider = ({ children }) => {
       }
     });
 
+    // Message reaction events
+    socket.on('message-reaction-update', (data) => {
+      console.log('❤️ Frontend: Received reaction update:', data);
+      // Update the message with new reactions
+      dispatch({ 
+        type: ACTIONS.UPDATE_MESSAGE, 
+        payload: { 
+          _id: data.messageId, 
+          reactions: data.reactions 
+        }
+      });
+    });
+
     // Cleanup
     return () => {
       socket.off('room-status-update');
       socket.off('room-joined');
       socket.off('new-message');
+      socket.off('message-edited');
+      socket.off('message-deleted');
+      socket.off('messages-cleared');
       socket.off('user-joined-room');
       socket.off('user-left');
       socket.off('user-reconnected');
       socket.off('user-disconnected');
       socket.off('user-typing');
+      socket.off('message-reaction-update');
     };
   }, [socket, isConnected, state.roomUsers]);
 

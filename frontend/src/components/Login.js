@@ -1,156 +1,209 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../contexts/SocketContext';
 import styled from 'styled-components';
+import { useSocket } from '../contexts/SocketContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { FaSun, FaMoon, FaUser, FaSmile } from 'react-icons/fa';
+import { avatarOptions } from '../utils/avatarUtils';
 
 const LoginContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: ${props => props.theme.isDark ? '#1a1a1a' : '#f5f5f5'};
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  transition: all 0.3s ease;
+`;
+
+const ThemeToggle = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: ${props => props.theme.isDark ? '#333' : '#fff'};
+  border: 2px solid ${props => props.theme.isDark ? '#555' : '#ddd'};
+  color: ${props => props.theme.isDark ? '#fff' : '#333'};
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 20px;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 const LoginCard = styled.div`
-  background: white;
-  padding: 2rem;
+  background: ${props => props.theme.isDark ? '#2d2d2d' : '#ffffff'};
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
   text-align: center;
+  border: 1px solid ${props => props.theme.isDark ? '#444' : '#e0e0e0'};
+  transition: all 0.3s ease;
+  margin: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 30px;
+    margin: 15px;
+    border-radius: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 20px;
+    margin: 10px;
+  }
 `;
 
 const Title = styled.h1`
-  color: #333;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  font-weight: 600;
-`;
-
-const Subtitle = styled.p`
-  color: #666;
-  margin-bottom: 2rem;
-  font-size: 1rem;
+  margin-bottom: 30px;
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  font-size: 2.5rem;
+  font-weight: bold;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    margin-bottom: 25px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 20px;
 `;
 
 const InputGroup = styled.div`
-  text-align: left;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
-  font-size: 0.9rem;
+  position: relative;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
+  padding: 15px 20px;
+  border: 2px solid ${props => props.theme.isDark ? '#555' : '#e0e0e0'};
   border-radius: 10px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-  
+  font-size: 16px;
+  background: ${props => props.theme.isDark ? '#3d3d3d' : '#ffffff'};
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  transition: all 0.3s ease;
+
   &:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.isDark ? '#aaa' : '#999'};
   }
 `;
 
 const AvatarGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: 15px;
+  margin-top: 10px;
+  
+  @media (max-width: 480px) {
+    gap: 10px;
+  }
 `;
 
 const AvatarOption = styled.button`
-  background: ${props => props.selected ? '#667eea' : '#f8f9fa'};
-  color: ${props => props.selected ? 'white' : '#333'};
-  border: 2px solid ${props => props.selected ? '#667eea' : '#e1e5e9'};
-  border-radius: 10px;
-  padding: 0.5rem;
-  font-size: 1.5rem;
+  width: 60px;
+  height: 60px;
+  border: 3px solid ${props => props.selected ? '#007bff' : 'transparent'};
+  border-radius: 50%;
+  background: ${props => props.theme.isDark ? '#3d3d3d' : '#f8f9fa'};
   cursor: pointer;
   transition: all 0.3s ease;
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+
   &:hover {
     transform: scale(1.1);
-    border-color: #667eea;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  @media (max-width: 480px) {
+    width: 50px;
+    height: 50px;
   }
 `;
 
+const AvatarImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+`;
+
 const Button = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
   border: none;
-  padding: 1rem;
+  padding: 15px 30px;
   border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-  transition: transform 0.3s ease;
-  
+  transition: all 0.3s ease;
+  margin-top: 10px;
+
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
   }
-  
+
   &:disabled {
-    opacity: 0.6;
+    background: #ccc;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
 `;
 
 const ErrorMessage = styled.div`
-  color: #e74c3c;
-  background: #fdf2f2;
-  padding: 0.75rem;
-  border-radius: 10px;
-  border: 1px solid #fecaca;
-  font-size: 0.9rem;
-  margin-top: 1rem;
+  color: #dc3545;
+  background: ${props => props.theme.isDark ? '#3d2d2d' : '#f8d7da'};
+  border: 1px solid ${props => props.theme.isDark ? '#5d3d3d' : '#f5c6cb'};
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 14px;
 `;
 
-const LoadingSpinner = styled.div`
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #ffffff3d;
-  border-radius: 50%;
-  border-top-color: #ffffff;
-  animation: spin 1s ease-in-out infinite;
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
+
 
 const Login = () => {
   const [username, setUsername] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('👤');
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState('avt1');
   const [error, setError] = useState('');
-  
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { connect, isConnected, joinUser } = useSocket();
-
-  const avatars = ['👤', '👨', '👩', '🧑', '👶', '👴', '👵', '👨‍💼', '👩‍💼', '🦸', '🦸‍♀️', '🤖'];
+  const { connect, joinUser, isConnected } = useSocket();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    // Connect to socket when component mounts
-    connect();
-  }, [connect]);
+    // Don't auto-navigate, let the user complete the login process
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,8 +213,8 @@ const Login = () => {
       return;
     }
 
-    if (username.trim().length < 2) {
-      setError('Username must be at least 2 characters long');
+    if (username.trim().length < 3) {
+      setError('Username must be at least 3 characters long');
       return;
     }
 
@@ -169,85 +222,71 @@ const Login = () => {
     setError('');
 
     try {
-      // Wait for connection if not connected
-      if (!isConnected) {
-        await new Promise(resolve => {
-          const checkConnection = () => {
-            if (isConnected) {
-              resolve();
-            } else {
-              setTimeout(checkConnection, 100);
-            }
-          };
-          checkConnection();
-        });
-      }
-
-      // Join user
-      joinUser(username.trim(), selectedAvatar);
-      
-      // Navigate to rooms after a short delay
-      setTimeout(() => {
-        navigate('/rooms');
-      }, 500);
-
+      connect();
+      // Wait a bit for connection to establish
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await joinUser(username.trim(), selectedAvatar);
+      navigate('/rooms');
     } catch (err) {
-      setError('Failed to connect. Please try again.');
+      setError(err.message || 'Failed to connect. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <LoginContainer>
-      <LoginCard>
+    <LoginContainer theme={theme}>
+      <ThemeToggle onClick={toggleTheme} theme={theme}>
+        {theme.isDark ? <FaSun /> : <FaMoon />}
+      </ThemeToggle>
+      
+      <LoginCard theme={theme}>
         <Title>Welcome to ChatApp</Title>
-        <Subtitle>Join the conversation with a unique username and avatar</Subtitle>
         
         <Form onSubmit={handleSubmit}>
           <InputGroup>
-            <Label htmlFor="username">Username</Label>
             <Input
-              id="username"
               type="text"
+              placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              maxLength={20}
+              theme={theme}
               disabled={isLoading}
             />
           </InputGroup>
 
-          <InputGroup>
-            <Label>Choose Avatar</Label>
+          <div>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '10px', 
+              textAlign: 'left',
+              color: theme.isDark ? '#ffffff' : '#333333',
+              fontWeight: '600'
+            }}>
+              Choose your avatar:
+            </label>
             <AvatarGrid>
-              {avatars.map((avatar) => (
+              {avatarOptions.map((avatar) => (
                 <AvatarOption
-                  key={avatar}
-                  type="button"
-                  selected={selectedAvatar === avatar}
-                  onClick={() => setSelectedAvatar(avatar)}
+                  key={avatar.id}
+                  selected={selectedAvatar === avatar.id}
+                  onClick={() => setSelectedAvatar(avatar.id)}
+                  theme={theme}
                   disabled={isLoading}
+                  type="button"
                 >
-                  {avatar}
+                  <AvatarImage src={avatar.src} alt={avatar.alt} />
                 </AvatarOption>
               ))}
             </AvatarGrid>
-          </InputGroup>
+          </div>
+
+          {error && <ErrorMessage theme={theme}>{error}</ErrorMessage>}
 
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <LoadingSpinner />
-                Connecting...
-              </>
-            ) : (
-              'Start Chatting'
-            )}
+            {isLoading ? 'Connecting...' : 'Start Chatting'}
           </Button>
         </Form>
-
-        {error && <ErrorMessage>{error}</ErrorMessage>}
       </LoginCard>
     </LoginContainer>
   );

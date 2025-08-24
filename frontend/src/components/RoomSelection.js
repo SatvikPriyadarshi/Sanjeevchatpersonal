@@ -1,226 +1,294 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../contexts/SocketContext';
-import { useChat } from '../contexts/ChatContext';
 import styled from 'styled-components';
+import { useSocket } from '../contexts/SocketContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { FaSun, FaMoon, FaArrowLeft, FaSignInAlt } from 'react-icons/fa';
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: ${props => props.theme.isDark ? '#1a1a1a' : '#f5f5f5'};
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  transition: all 0.3s ease;
 `;
 
 const Header = styled.div`
-  text-align: center;
-  color: white;
-  margin-bottom: 3rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-`;
-
-const Subtitle = styled.p`
-  font-size: 1.2rem;
-  opacity: 0.9;
-`;
-
-const RoomGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const RoomCard = styled.div`
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const RoomHeader = styled.div`
+  background: ${props => props.theme.isDark ? '#2d2d2d' : '#ffffff'};
+  padding: 15px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-`;
-
-const RoomNumber = styled.h2`
-  font-size: 1.8rem;
-  color: #333;
-  margin: 0;
-`;
-
-const StatusBadge = styled.span`
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  border-bottom: 1px solid ${props => props.theme.isDark ? '#444' : '#e0e0e0'};
   
-  ${props => {
-    switch (props.status) {
-      case 'available':
-        return `
-          background: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
-        `;
-      case 'occupied':
-        return `
-          background: #fff3cd;
-          color: #856404;
-          border: 1px solid #ffeaa7;
-        `;
-      case 'full':
-        return `
-          background: #f8d7da;
-          color: #721c24;
-          border: 1px solid #f5c6cb;
-        `;
-      default:
-        return `
-          background: #e2e3e5;
-          color: #383d41;
-          border: 1px solid #d6d8db;
-        `;
-    }
-  }}
+  @media (max-width: 768px) {
+    padding: 10px 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 `;
 
-const RoomInfo = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const UserList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-`;
-
-const UserItem = styled.div`
+const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 10px;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+    flex: 1;
+  }
 `;
 
-const UserAvatar = styled.span`
-  font-size: 1.2rem;
+const BackButton = styled.button`
+  background: ${props => props.theme.isDark ? '#444' : '#f8f9fa'};
+  border: 1px solid ${props => props.theme.isDark ? '#555' : '#dee2e6'};
+  color: ${props => props.theme.isDark ? '#fff' : '#333'};
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.theme.isDark ? '#555' : '#e9ecef'};
+    transform: translateY(-1px);
+  }
 `;
 
-const UserName = styled.span`
-  color: #333;
-  font-weight: 500;
+const Title = styled.h1`
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
 `;
 
-const OnlineIndicator = styled.div`
-  width: 8px;
-  height: 8px;
+const ThemeToggle = styled.button`
+  background: ${props => props.theme.isDark ? '#333' : '#fff'};
+  border: 2px solid ${props => props.theme.isDark ? '#555' : '#ddd'};
+  color: ${props => props.theme.isDark ? '#fff' : '#333'};
   border-radius: 50%;
-  background: ${props => props.online ? '#28a745' : '#6c757d'};
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 18px;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const Content = styled.div`
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    padding: 20px 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 15px 10px;
+  }
+`;
+
+const RoomCard = styled.div`
+  background: ${props => props.theme.isDark ? '#2d2d2d' : '#ffffff'};
+  border: 2px solid ${props => props.theme.isDark ? '#444' : '#e0e0e0'};
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 30px;
+    border-radius: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 25px;
+  }
+`;
+
+const RoomTitle = styled.h2`
+  margin: 0 0 20px 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+  }
+`;
+
+const Description = styled.p`
+  color: ${props => props.theme.isDark ? '#ccc' : '#666'};
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-bottom: 25px;
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+`;
+
+const InputGroup = styled.div`
+  position: relative;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  font-size: 1rem;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 15px 20px;
+  border: 2px solid ${props => props.theme.isDark ? '#555' : '#e0e0e0'};
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  background: ${props => props.theme.isDark ? '#3d3d3d' : '#ffffff'};
+  color: ${props => props.theme.isDark ? '#ffffff' : '#333333'};
+  transition: all 0.3s ease;
+  font-weight: bold;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: scale(1.02);
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.isDark ? '#aaa' : '#999'};
+    font-weight: normal;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
 `;
 
 const JoinButton = styled.button`
-  width: 100%;
-  background: ${props => {
-    switch (props.status) {
-      case 'available':
-        return 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-      case 'occupied':
-        return 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
-      case 'full':
-        return 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
-      default:
-        return 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
-    }
-  }};
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
   border: none;
-  padding: 1rem;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: ${props => props.status === 'full' ? 'not-allowed' : 'pointer'};
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: ${props => props.status === 'full' ? 'none' : 'translateY(-2px)'};
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #ffffff3d;
-  border-radius: 50%;
-  border-top-color: #ffffff;
-  animation: spin 1s ease-in-out infinite;
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  color: white;
-  padding: 3rem;
-`;
-
-const RefreshButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
   }
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  background: ${props => props.theme.isDark ? '#3d2d2d' : '#f8d7da'};
+  border: 1px solid ${props => props.theme.isDark ? '#5d3d3d' : '#f5c6cb'};
+  color: #dc3545;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+`;
+
+const RoomHint = styled.div`
+  background: ${props => props.theme.isDark ? '#2a3f5f' : '#e3f2fd'};
+  border: 1px solid ${props => props.theme.isDark ? '#3a5f7f' : '#bbdefb'};
+  color: ${props => props.theme.isDark ? '#90caf9' : '#1976d2'};
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
 `;
 
 const RoomSelection = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [roomId, setRoomId] = useState('');
   const [error, setError] = useState('');
-  
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { isConnected, getRoomStatus } = useSocket();
-  const { rooms, setRooms } = useChat();
+  const { joinRoom, isConnected, user } = useSocket();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    if (isConnected) {
-      getRoomStatus();
+    if (!isConnected || !user) {
+      navigate('/login');
     }
-  }, [isConnected, getRoomStatus]);
+  }, [isConnected, user, navigate]);
 
-  const handleJoinRoom = async (roomId, status) => {
-    if (status === 'full') {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!roomId.trim()) {
+      setError('Please enter a room ID');
+      return;
+    }
+
+    const roomNumber = parseInt(roomId.trim());
+    
+    if (isNaN(roomNumber) || roomNumber < 1 || roomNumber > 5) {
+      setError('Room ID must be a number between 1 and 5');
       return;
     }
 
@@ -228,146 +296,77 @@ const RoomSelection = () => {
     setError('');
 
     try {
-      // Navigate to chat room
-      navigate(`/chat/${roomId}`);
+      await joinRoom(roomNumber);
+      navigate(`/chat/${roomNumber}`);
     } catch (err) {
-      setError('Failed to join room. Please try again.');
+      setError(err.message || 'Failed to join room. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRefresh = () => {
-    if (isConnected) {
-      getRoomStatus();
-    }
+  const handleLogout = () => {
+    navigate('/login');
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'available':
-        return 'Available';
-      case 'occupied':
-        return '1 User';
-      case 'full':
-        return 'Full';
-      default:
-        return 'Unknown';
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'available':
-        return 'available';
-      case 'occupied':
-        return 'occupied';
-      case 'full':
-        return 'full';
-      default:
-        return 'unknown';
-    }
-  };
-
-  if (!isConnected) {
-    return (
-      <Container>
-        <EmptyState>
-          <h2>Connecting to server...</h2>
-          <p>Please wait while we establish a connection.</p>
-        </EmptyState>
-      </Container>
-    );
+  if (!isConnected || !user) {
+    navigate('/login');
+    return null;
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Choose Your Chat Room</Title>
-        <Subtitle>Select from our 5 available rooms to start chatting</Subtitle>
+    <Container theme={theme}>
+      <Header theme={theme}>
+        <HeaderLeft>
+          <BackButton onClick={handleLogout} theme={theme}>
+            <FaArrowLeft />
+            Logout
+          </BackButton>
+          <Title>Join Private Room</Title>
+        </HeaderLeft>
+        <ThemeToggle onClick={toggleTheme} theme={theme}>
+          {theme.isDark ? <FaSun /> : <FaMoon />}
+        </ThemeToggle>
       </Header>
 
-      {rooms.length === 0 ? (
-        <EmptyState>
-          <h2>No rooms available</h2>
-          <p>Please wait for rooms to be initialized or refresh the page.</p>
-          <RefreshButton onClick={handleRefresh}>
-            Refresh Rooms
-          </RefreshButton>
-        </EmptyState>
-      ) : (
-        <RoomGrid>
-          {rooms.map((room) => (
-            <RoomCard key={room.id}>
-              <RoomHeader>
-                <RoomNumber>Room {room.roomNumber}</RoomNumber>
-                <StatusBadge status={getStatusColor(room.status)}>
-                  {getStatusText(room.status)}
-                </StatusBadge>
-              </RoomHeader>
+      <Content>
+        <RoomCard theme={theme}>
+          <RoomTitle theme={theme}>Enter Room ID</RoomTitle>
+          <Description theme={theme}>
+            Choose a room number (1-5) to join. If another user enters the same room ID, you'll be connected for private chat.
+          </Description>
 
-              <RoomInfo>
-                <UserList>
-                  {room.user1 && (
-                    <UserItem>
-                      <UserAvatar>{room.user1.avatar}</UserAvatar>
-                      <UserName>{room.user1.username}</UserName>
-                      <OnlineIndicator online={room.user1.isOnline} />
-                    </UserItem>
-                  )}
-                  {room.user2 && (
-                    <UserItem>
-                      <UserAvatar>{room.user2.avatar}</UserAvatar>
-                      <UserName>{room.user2.username}</UserName>
-                      <OnlineIndicator online={room.user2.isOnline} />
-                    </UserItem>
-                  )}
-                  {!room.user1 && !room.user2 && (
-                    <p style={{ color: '#666', fontStyle: 'italic' }}>
-                      No users in this room
-                    </p>
-                  )}
-                </UserList>
-              </RoomInfo>
+          <Form onSubmit={handleSubmit}>
+            <InputGroup>
+              <Label theme={theme}>Room ID (1-5)</Label>
+              <Input
+                type="text"
+                placeholder="Enter room number"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                theme={theme}
+                disabled={isLoading}
+                maxLength="1"
+              />
+            </InputGroup>
 
-              <JoinButton
-                status={room.status}
-                onClick={() => handleJoinRoom(room.id, room.status)}
-                disabled={isLoading || room.status === 'full'}
-              >
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner />
-                    Joining...
-                  </>
-                ) : room.status === 'full' ? (
-                  'Room Full'
-                ) : room.status === 'occupied' ? (
-                  'Join Room'
-                ) : (
-                  'Join Room'
-                )}
-              </JoinButton>
-            </RoomCard>
-          ))}
-        </RoomGrid>
-      )}
+            <JoinButton type="submit" disabled={isLoading || !roomId.trim()}>
+              <FaSignInAlt />
+              {isLoading ? 'Joining...' : 'Join Room'}
+            </JoinButton>
 
-      {error && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          background: '#f8d7da',
-          color: '#721c24',
-          padding: '1rem',
-          borderRadius: '10px',
-          border: '1px solid #f5c6cb',
-          zIndex: 1000
-        }}>
-          {error}
-        </div>
-      )}
+            {error && (
+              <ErrorMessage theme={theme}>
+                {error}
+              </ErrorMessage>
+            )}
+
+            <RoomHint theme={theme}>
+              💡 Tip: Share the same room ID with someone to start a private conversation!
+            </RoomHint>
+          </Form>
+        </RoomCard>
+      </Content>
     </Container>
   );
 };
