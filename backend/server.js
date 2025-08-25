@@ -5,7 +5,12 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-require("dotenv").config({ path: "./config.env" });
+
+console.log("🚀 Starting Chat Application Server...");
+console.log("📁 Loading environment variables...");
+require("dotenv").config();
+console.log("✅ Environment variables loaded");
+console.log("");
 
 const app = express();
 const server = http.createServer(app);
@@ -50,13 +55,28 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection
+console.log("🔍 Attempting to connect to MongoDB...");
+console.log("📋 Environment Variables:");
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'NOT SET'}`);
+console.log(`   PORT: ${process.env.PORT || 'NOT SET (default: 5000)'}`);
+console.log(`   HOST: ${process.env.HOST || 'NOT SET (default: 0.0.0.0)'}`);
+console.log(`   CORS_ORIGIN: ${process.env.CORS_ORIGIN || 'NOT SET'}`);
+console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? 'SET (length: ' + process.env.JWT_SECRET.length + ')' : 'NOT SET'}`);
+console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? 'SET (database: ' + process.env.MONGODB_URI.split('/').pop().split('?')[0] + ')' : 'NOT SET'}`);
+console.log("");
+
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(async () => {
-    console.log("Connected to MongoDB");
+    console.log("✅ Successfully connected to MongoDB!");
+    console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
+    console.log(`🌐 Host: ${mongoose.connection.host}`);
+    console.log(`📡 Port: ${mongoose.connection.port}`);
+    console.log(`🔗 Connection State: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Not Connected'}`);
+    console.log("");
     // Initialize rooms on startup
     const Room = require("./models/Room");
     await Room.initializeRooms();
