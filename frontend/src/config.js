@@ -2,7 +2,7 @@
 // This file centralizes all configuration settings
 
 // Get backend URL from environment variable or use localhost as fallback
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL ="https://sanjeevchatpersonal.onrender.com";
 
 // Configuration object
 const config = {
