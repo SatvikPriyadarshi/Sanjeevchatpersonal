@@ -2,7 +2,7 @@
 // This file centralizes all configuration settings
 
 // Get backend URL from environment variable or use localhost as fallback
-const BACKEND_URL = "https://sanjeevchatpersonal.onrender.com" || 'https://sanjeevchatpersonal.onrender.com';
+const BACKEND_URL = "https://sanjeevchatpersonal.onrender.com';
 
 // Configuration object
 const config = {
