@@ -137,19 +137,19 @@ export const ChatProvider = ({ children }) => {
     });
 
     socket.on('room-joined', (roomData) => {
-      console.log('🏠 Frontend: Room joined event received:', roomData);
+      // console.log('🏠 Frontend: Room joined event received:', roomData);
       dispatch({ type: ACTIONS.SET_CURRENT_ROOM, payload: roomData });
       dispatch({ type: ACTIONS.SET_MESSAGES, payload: roomData.messages });
     });
 
     // Message events
     socket.on('new-message', (message) => {
-      console.log('📨 Frontend: Received new message:', message);
+      // console.log('📨 Frontend: Received new message:', message);
       dispatch({ type: ACTIONS.ADD_MESSAGE, payload: message });
     });
 
     socket.on('message-edited', (editedMessage) => {
-      console.log('✏️ Frontend: Message edited:', editedMessage);
+      // console.log('✏️ Frontend: Message edited:', editedMessage);
       dispatch({ 
         type: ACTIONS.UPDATE_MESSAGE, 
         payload: editedMessage
@@ -157,7 +157,7 @@ export const ChatProvider = ({ children }) => {
     });
 
     socket.on('message-deleted', ({ messageId }) => {
-      console.log('🗑️ Frontend: Message deleted:', messageId);
+      // console.log('🗑️ Frontend: Message deleted:', messageId);
       dispatch({ 
         type: ACTIONS.DELETE_MESSAGE, 
         payload: messageId
@@ -165,13 +165,13 @@ export const ChatProvider = ({ children }) => {
     });
 
     socket.on('messages-cleared', ({ messages }) => {
-      console.log('🧹 Frontend: All messages cleared');
+      // console.log('🧹 Frontend: All messages cleared');
       dispatch({ type: ACTIONS.SET_MESSAGES, payload: messages });
     });
 
     // User events
     socket.on('user-joined-room', (user) => {
-      console.log('👤 Frontend: User joined room:', user);
+      // console.log('👤 Frontend: User joined room:', user);
       dispatch({ type: ACTIONS.SET_ROOM_USERS, payload: [...state.roomUsers, user] });
     });
 
@@ -189,7 +189,7 @@ export const ChatProvider = ({ children }) => {
 
     // Typing events
     socket.on('user-typing', (userData) => {
-      console.log('⌨️ Frontend: Received typing event:', userData);
+      // console.log('⌨️ Frontend: Received typing event:', userData);
       if (userData.isTyping) {
         dispatch({ type: ACTIONS.ADD_TYPING_USER, payload: userData });
       } else {
@@ -199,7 +199,7 @@ export const ChatProvider = ({ children }) => {
 
     // Message reaction events
     socket.on('message-reaction-update', (data) => {
-      console.log('❤️ Frontend: Received reaction update:', data);
+      // console.log('❤️ Frontend: Received reaction update:', data);
       // Update the message with new reactions
       dispatch({ 
         type: ACTIONS.UPDATE_MESSAGE, 

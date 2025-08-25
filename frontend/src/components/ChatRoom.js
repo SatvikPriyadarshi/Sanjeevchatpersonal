@@ -1397,14 +1397,14 @@ const ChatRoom = () => {
   const touchEndRef = useRef(null);
   const doubleTapTimeoutRef = useRef(null);
 
-  console.log("🏠 ChatRoom: Component rendered with:", {
-    roomId,
-    isConnected,
-    user: user?.username,
-    messagesCount: messages.length,
-    typingUsersCount: typingUsers.length,
-    roomUsersCount: roomUsers.length,
-  });
+  // console.log("🏠 ChatRoom: Component rendered with:", {
+  //   roomId,
+  //   isConnected,
+  //   user: user?.username,
+  //   messagesCount: messages.length,
+  //   typingUsersCount: typingUsers.length,
+  //   roomUsersCount: roomUsers.length,
+  // });
 
   useEffect(() => {
     if (!isConnected || !user) {
@@ -1415,9 +1415,9 @@ const ChatRoom = () => {
     // Join the room when component mounts
     const joinCurrentRoom = async () => {
       try {
-        console.log("🏠 ChatRoom: Attempting to join room:", roomId);
+        // console.log("🏠 ChatRoom: Attempting to join room:", roomId);
         await joinRoom(roomId);
-        console.log("✅ ChatRoom: Successfully joined room:", roomId);
+        // console.log("✅ ChatRoom: Successfully joined room:", roomId);
       } catch (error) {
         console.error("❌ ChatRoom: Failed to join room:", error);
         navigate("/rooms");
@@ -1428,25 +1428,25 @@ const ChatRoom = () => {
   }, [isConnected, user, navigate, joinRoom, roomId]);
 
   useEffect(() => {
-    console.log("📝 ChatRoom: Messages updated, count:", messages.length);
-    console.log("📝 ChatRoom: Current messages:", messages);
+    // console.log("📝 ChatRoom: Messages updated, count:", messages.length);
+    // console.log("📝 ChatRoom: Current messages:", messages);
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    console.log("⌨️ ChatRoom: Typing users updated:", typingUsers);
+    // console.log("⌨️ ChatRoom: Typing users updated:", typingUsers);
   }, [typingUsers]);
 
   useEffect(() => {
-    console.log("👥 ChatRoom: Room users updated:", roomUsers);
+    // console.log("👥 ChatRoom: Room users updated:", roomUsers);
   }, [roomUsers]);
 
   useEffect(() => {
     if (isTyping) {
-      console.log("⌨️ ChatRoom: Starting typing indicator");
+      // console.log("⌨️ ChatRoom: Starting typing indicator");
       startTyping();
     } else {
-      console.log("⌨️ ChatRoom: Stopping typing indicator");
+      // console.log("⌨️ ChatRoom: Stopping typing indicator");
       stopTyping();
     }
   }, [isTyping, startTyping, stopTyping]);
@@ -1486,7 +1486,7 @@ const ChatRoom = () => {
 
     if (!newMessage.trim()) return;
 
-    console.log("📨 ChatRoom: Attempting to send message:", newMessage.trim());
+    // console.log("📨 ChatRoom: Attempting to send message:", newMessage.trim());
 
     try {
       if (replyingTo) {
@@ -1505,7 +1505,7 @@ const ChatRoom = () => {
       setNewMessage("");
       setReplyingTo(null);
       setIsTyping(false);
-      console.log("✅ ChatRoom: Message sent successfully");
+      // console.log("✅ ChatRoom: Message sent successfully");
     } catch (err) {
       console.error("❌ ChatRoom: Failed to send message:", err);
     }
@@ -1542,7 +1542,7 @@ const ChatRoom = () => {
   };
 
   const handleLeaveRoom = () => {
-    console.log("🚪 ChatRoom: User clicked leave room");
+    // console.log("🚪 ChatRoom: User clicked leave room");
     leaveRoom();
     navigate("/rooms");
   };
@@ -1580,7 +1580,7 @@ const ChatRoom = () => {
   };
 
   const handleContextAction = (action, message) => {
-    console.log(`Context action: ${action}`, message);
+    // console.log(`Context action: ${action}`, message);
 
     switch (action) {
       case "reply":
@@ -1601,7 +1601,7 @@ const ChatRoom = () => {
         break;
       case "forward":
         // Implement forward functionality
-        console.log("Forward message:", message.content);
+        // console.log("Forward message:", message.content);
         break;
       case "star":
         // Add heart reaction like double tap
@@ -1615,15 +1615,15 @@ const ChatRoom = () => {
         break;
       case "pin":
         // Implement pin functionality
-        console.log("Pin message:", message.id);
+        // console.log("Pin message:", message.id);
         break;
       case "info":
         // Show message info
-        console.log("Message info:", message);
+        // console.log("Message info:", message);
         break;
       case "translate":
         // Implement translation
-        console.log("Translate message:", message.content);
+        // console.log("Translate message:", message.content);
         break;
       case "quote":
         // Quote message
@@ -1647,10 +1647,10 @@ const ChatRoom = () => {
         break;
       case "report":
         // Implement report functionality
-        console.log("Report message:", message.id);
+        // console.log("Report message:", message.id);
         break;
       default:
-        console.log(`Action ${action} not implemented yet`);
+        // console.log(`Action ${action} not implemented yet`);
     }
 
     closeContextMenu();
@@ -1994,11 +1994,11 @@ const ChatRoom = () => {
 
               // Debug: Log message reactions
               if (message.reactions) {
-                console.log(
-                  "💖 Message reactions:",
-                  message._id,
-                  message.reactions
-                );
+                // console.log(
+                //   "💖 Message reactions:",
+                //   message._id,
+                //   message.reactions
+                // );
               }
 
               return (

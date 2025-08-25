@@ -22,7 +22,7 @@ const socketHandler = (io) => {
         // Create or find user - always use the most recent user with this username (case-insensitive)
         let user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } }).sort({ lastSeen: -1 });
         if (!user) {
-          console.log('🆕 Creating new user:', username);
+          // console.log('🆕 Creating new user:', username);
           user = new User({
             username,
             avatar: avatar || 'avt1',
@@ -31,7 +31,7 @@ const socketHandler = (io) => {
           });
           await user.save();
         } else {
-          console.log('👤 Found existing user:', username, 'ID:', user._id.toString());
+          // console.log('👤 Found existing user:', username, 'ID:', user._id.toString());
           // Update existing user
           user.socketId = socket.id;
           user.isOnline = true;
@@ -106,12 +106,12 @@ const socketHandler = (io) => {
 
         // Check if user is already in the requested room
         if (user.roomId && user.roomId.toString() === room._id.toString()) {
-          console.log('👤 User already in room, just updating socket connection');
-          console.log('🔍 User current room:', user.roomId.toString(), 'Requested room:', room._id.toString());
+          // console.log('👤 User already in room, just updating socket connection');
+          // console.log('🔍 User current room:', user.roomId.toString(), 'Requested room:', room._id.toString());
           
           // Just join the socket room and update connection info
           socket.join(room._id.toString());
-          console.log('🔗 Socket', socket.id, 'rejoined room:', room._id.toString());
+          // console.log('🔗 Socket', socket.id, 'rejoined room:', room._id.toString());
           
           const updatedConnectionInfo = {
             ...connectionInfo,
@@ -130,7 +130,7 @@ const socketHandler = (io) => {
             messages: chronologicalMessages
           };
           
-          console.log('📤 Sending room-joined event to user (rejoin):', user.username);
+          // console.log('📤 Sending room-joined event to user (rejoin):', user.username);
           socket.emit('room-joined', roomData);
           
           return;
@@ -153,38 +153,38 @@ const socketHandler = (io) => {
           }
         }
 
-        console.log('🏠 Room status check:', {
-          roomNumber: room.roomNumber,
-          status: room.status,
-          user1: room.user1?.toString(),
-          user2: room.user2?.toString(),
-          currentUserId: userId.toString(),
-          isAvailable: room.isAvailable()
-        });
+        // console.log('🏠 Room status check:', {
+        //   roomNumber: room.roomNumber,
+        //   status: room.status,
+        //   user1: room.user1?.toString(),
+        //   user2: room.user2?.toString(),
+        //   currentUserId: userId.toString(),
+        //   isAvailable: room.isAvailable()
+        // });
 
         // Check if user is already in this room as user1 or user2
         const isUserInRoom = (room.user1 && room.user1.toString() === userId.toString()) || 
                             (room.user2 && room.user2.toString() === userId.toString());
         
-        console.log('🔍 User room check:', {
-          userId: userId.toString(),
-          roomUser1: room.user1?.toString(),
-          roomUser2: room.user2?.toString(),
-          isUserInRoom,
-          userAssignedRoom: user.roomId?.toString(),
-          currentRoom: room._id.toString()
-        });
+        // console.log('🔍 User room check:', {
+        //   userId: userId.toString(),
+        //   roomUser1: room.user1?.toString(),
+        //   roomUser2: room.user2?.toString(),
+        //   isUserInRoom,
+        //   userAssignedRoom: user.roomId?.toString(),
+        //   currentRoom: room._id.toString()
+        // });
         
         // Fix inconsistent room state: if user1 is null but user2 exists and status is full
         if (!room.user1 && room.user2 && room.status === 'full') {
-          console.log('🔧 Fixing inconsistent room state: user1 is null but room is marked as full');
+          // console.log('🔧 Fixing inconsistent room state: user1 is null but room is marked as full');
           room.status = 'occupied'; // Should be occupied, not full
           await room.save();
         }
         
         // If user is assigned to this room but not actually in the room slots, fix it
         if (user.roomId && user.roomId.toString() === room._id.toString() && !isUserInRoom) {
-          console.log('🔧 User is assigned to room but not in room slots, fixing...');
+          // console.log('🔧 User is assigned to room but not in room slots, fixing...');
           // Clear the user's room assignment and let them rejoin properly
           user.roomId = null;
           await user.save();
@@ -196,36 +196,36 @@ const socketHandler = (io) => {
                         isUserInRoom;
         
         if (isUserInRoom) {
-          console.log('👤 User is already in this room, allowing rejoin');
+          // console.log('👤 User is already in this room, allowing rejoin');
         } else if (!hasSpace) {
-          console.log('❌ Room is truly full:', {
-            status: room.status,
-            user1: room.user1 ? 'occupied' : 'free',
-            user2: room.user2 ? 'occupied' : 'free'
-          });
+          // console.log('❌ Room is truly full:', {
+          //   status: room.status,
+          //   user1: room.user1 ? 'occupied' : 'free',
+          //   user2: room.user2 ? 'occupied' : 'free'
+          // });
           socket.emit('join-room-error', { message: 'Room is full' });
           return;
         }
 
         // Add user to room
-        console.log('🏠 Adding user to room...');
-        console.log('🔍 Before adding user - Room state:', {
-          user1: room.user1,
-          user2: room.user2,
-          status: room.status
-        });
+        // console.log('🏠 Adding user to room...');
+        // console.log('🔍 Before adding user - Room state:', {
+        //   user1: room.user1,
+        //   user2: room.user2,
+        //   status: room.status
+        // });
         
         await room.addUser(userId);
         
-        console.log('🔍 After adding user - Room state:', {
-          user1: room.user1,
-          user2: room.user2,
-          status: room.status
-        });
+        // console.log('🔍 After adding user - Room state:', {
+        //   user1: room.user1,
+        //   user2: room.user2,
+        //   status: room.status
+        // });
         
-        console.log('👤 Assigning user to room...');
+        // console.log('👤 Assigning user to room...');
         await user.assignToRoom(room._id);
-        console.log('✅ User assigned to room successfully');
+        // console.log('✅ User assigned to room successfully');
         
         // Join socket room
         socket.join(room._id.toString());
@@ -238,12 +238,12 @@ const socketHandler = (io) => {
         };
         activeConnections.set(socket.id, updatedConnectionInfo);
         
-        console.log('🔄 Updated connection info for socket', socket.id, ':', updatedConnectionInfo);
-        console.log('📊 Active connections:', Array.from(activeConnections.entries()).map(([socketId, info]) => ({
-          socketId,
-          username: info.username,
-          roomId: info.roomId?.toString()
-        })));
+        // console.log('🔄 Updated connection info for socket', socket.id, ':', updatedConnectionInfo);
+        // console.log('📊 Active connections:', Array.from(activeConnections.entries()).map(([socketId, info]) => ({
+        //   socketId,
+        //   username: info.username,
+        //   roomId: info.roomId?.toString()
+        // })));
 
         // Create system message
         await Message.createSystemMessage(room._id, `${user.username} joined the room`);
@@ -259,8 +259,8 @@ const socketHandler = (io) => {
           avatar: user.avatar
         };
         
-        console.log('📤 Broadcasting user-joined-room to room:', room._id.toString());
-        console.log('👤 User joined data:', userJoinedData);
+        // console.log('📤 Broadcasting user-joined-room to room:', room._id.toString());
+        // console.log('👤 User joined data:', userJoinedData);
         
         socket.to(room._id.toString()).emit('user-joined-room', userJoinedData);
 
@@ -271,8 +271,8 @@ const socketHandler = (io) => {
           messages: chronologicalMessages
         };
         
-        console.log('📤 Sending room-joined event to user:', user.username);
-        console.log('📝 Room data:', roomData);
+        // console.log('📤 Sending room-joined event to user:', user.username);
+        // console.log('📝 Room data:', roomData);
         
         socket.emit('room-joined', roomData);
 
@@ -288,7 +288,7 @@ const socketHandler = (io) => {
     // Handle chat messages
     socket.on('chat-message', async (data) => {
       try {
-        console.log('📨 Received chat-message:', data);
+        // console.log('📨 Received chat-message:', data);
         const { content, replyTo } = data;
         const connectionInfo = activeConnections.get(socket.id);
         

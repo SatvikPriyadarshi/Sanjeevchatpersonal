@@ -26,9 +26,9 @@ export const SocketProvider = ({ children }) => {
     const websocketUrl = getWebSocketUrl();
     const socketConfig = getSocketConfig();
     
-    console.log("🔌 SocketContext: Connecting to WebSocket URL:", websocketUrl);
-    console.log("🌍 SocketContext: Environment REACT_APP_BACKEND_URL:", process.env.REACT_APP_BACKEND_URL);
-    console.log("⚙️ SocketContext: Socket config:", socketConfig);
+    // console.log("🔌 SocketContext: Connecting to WebSocket URL:", websocketUrl);
+    // console.log("🌍 SocketContext: Environment REACT_APP_BACKEND_URL:", process.env.REACT_APP_BACKEND_URL);
+    // console.log("⚙️ SocketContext: Socket config:", socketConfig);
     
     const newSocket = io(websocketUrl, socketConfig);
 
@@ -40,7 +40,7 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Disconnected from server");
+      // console.log("Disconnected from server");
       setIsConnected(false);
     });
 
@@ -52,7 +52,7 @@ export const SocketProvider = ({ children }) => {
 
     // User events
     newSocket.on("user-joined", (userData) => {
-      console.log("User joined:", userData);
+      // console.log("User joined:", userData);
       setUser(userData);
       localStorage.setItem("chatapp-user", JSON.stringify(userData));
     });
@@ -138,7 +138,7 @@ export const SocketProvider = ({ children }) => {
 
         socket.once("room-joined", (roomData) => {
           clearTimeout(timeout);
-          console.log("🏠 Frontend: Room joined successfully:", roomData);
+          // console.log("🏠 Frontend: Room joined successfully:", roomData);
           resolve(roomData);
         });
 
@@ -162,39 +162,39 @@ export const SocketProvider = ({ children }) => {
   // Send chat message
   const sendMessage = (content) => {
     if (socket && isConnected) {
-      console.log("📨 Frontend: Sending message:", content);
+      // console.log("📨 Frontend: Sending message:", content);
       socket.emit("chat-message", { content });
     } else {
-      console.log(
-        "❌ Frontend: Cannot send message - socket connected:",
-        isConnected
-      );
+      // console.log(
+      //   "❌ Frontend: Cannot send message - socket connected:",
+      //   isConnected
+      // );
     }
   };
 
   // Start typing indicator
   const startTyping = () => {
     if (socket && isConnected) {
-      console.log("⌨️ Frontend: Starting typing indicator");
+      // console.log("⌨️ Frontend: Starting typing indicator");
       socket.emit("typing-start");
     } else {
-      console.log(
-        "❌ Frontend: Cannot start typing - socket connected:",
-        isConnected
-      );
+      // console.log(
+      //   "❌ Frontend: Cannot start typing - socket connected:",
+      //   isConnected
+      // );
     }
   };
 
   // Stop typing indicator
   const stopTyping = () => {
     if (socket && isConnected) {
-      console.log("⌨️ Frontend: Stopping typing indicator");
+      // console.log("⌨️ Frontend: Stopping typing indicator");
       socket.emit("typing-stop");
     } else {
-      console.log(
-        "❌ Frontend: Cannot stop typing - socket connected:",
-        isConnected
-      );
+      // console.log(
+      //   "❌ Frontend: Cannot stop typing - socket connected:",
+      //   isConnected
+      // );
     }
   };
 

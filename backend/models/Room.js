@@ -49,7 +49,7 @@ roomSchema.methods.addUser = function(userId) {
   // Check if user is already in the room
   if ((this.user1 && this.user1.toString() === userId.toString()) ||
       (this.user2 && this.user2.toString() === userId.toString())) {
-    console.log('User already in room, not adding again');
+    // console.log('User already in room, not adding again');
     return this.save();
   }
   
@@ -124,7 +124,7 @@ roomSchema.statics.initializeRooms = async function() {
       });
     }
     await this.insertMany(rooms);
-    console.log('Initialized 5 rooms');
+    // console.log('Initialized 5 rooms');
   }
 };
 
